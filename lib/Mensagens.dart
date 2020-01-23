@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:whatsapp/model/Conversa.dart';
 import 'dart:io';
 import 'package:whatsapp/model/Mensagem.dart';
 import 'package:whatsapp/model/Usuario.dart';
@@ -25,7 +26,7 @@ class _MensagensState extends State<Mensagens> {
   Firestore db = Firestore.instance;
   TextEditingController _controllerMensagem = TextEditingController();
 
-  _enviarMensagem() {
+  _enviarMensagemTexto() {
     String textoMensagem = _controllerMensagem.text;
     if (textoMensagem.isNotEmpty) {
       Mensagem mensagem = Mensagem();
@@ -39,7 +40,32 @@ class _MensagensState extends State<Mensagens> {
 
       // Destínatário
       _salvarMensagem(_idUsuarioDestinatario, _idUsuarioLogado, mensagem);
+
+      //Salvar conversa
+      _salvarConversa( mensagem );
     }
+  }
+
+  _salvarConversa(Mensagem msg) {
+    // Salvar remetente
+    Conversa cRemetente = Conversa();
+    cRemetente.idRemetente = _idUsuarioLogado;
+    cRemetente.idDestinatario = _idUsuarioDestinatario;
+    cRemetente.mensagem = msg.mensagem;
+    cRemetente.nome = widget.contato.nome;
+    cRemetente.caminhoFoto = widget.contato.urlImagem;
+    cRemetente.tipoMensagem = msg.tipo;
+    cRemetente.salvar();
+
+    // Salvar destinatario
+    Conversa cDestinatario = Conversa();
+    cDestinatario.idRemetente = _idUsuarioDestinatario;
+    cDestinatario.idDestinatario = _idUsuarioLogado;
+    cDestinatario.mensagem = msg.mensagem;
+    cDestinatario.nome = widget.contato.nome;
+    cDestinatario.caminhoFoto = widget.contato.urlImagem;
+    cDestinatario.tipoMensagem = msg.tipo;
+    cDestinatario.salvar();
   }
 
   _salvarMensagem(String idRemetente, String idDestinatario, Mensagem msg) async {
@@ -156,7 +182,7 @@ class _MensagensState extends State<Mensagens> {
             backgroundColor: Color(0xFF075e54),
             child: Icon(Icons.send, color: Colors.white),
             mini: true,
-            onPressed: _enviarMensagem,
+            onPressed: _enviarMensagemTexto,
           ),
         ],
       ),
