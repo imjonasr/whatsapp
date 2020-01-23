@@ -45,7 +45,11 @@ class _MensagensState extends State<Mensagens> {
       mensagem.urlImagem = "";
       mensagem.tipo = "texto";
 
+      // Remetente
       _salvarMensagem(_idUsuarioLogado, _idUsuarioDestinatario, mensagem);
+
+      // Destínatário
+      _salvarMensagem(_idUsuarioDestinatario, _idUsuarioLogado, mensagem);
     }
   }
 
