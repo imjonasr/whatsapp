@@ -1,6 +1,6 @@
 # whatsapp
 
-A new Flutter project.
+Functional whatsapp clone based on [Desenvolvimento Android e IOS com Flutter - Crie 12 Apps](https://www.udemy.com/course/desenvolvimento-android-e-ios-com-flutter/)
 
 ## Getting Started
 
