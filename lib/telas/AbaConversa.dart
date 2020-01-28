@@ -94,24 +94,34 @@ class _AbaConversaState extends State<AbaConversa> {
               itemCount: _listaConversas.length,
               itemBuilder: (context, indice) {
 
-                Conversa conversa = _listaConversas[indice];
+                List<DocumentSnapshot> conversas = querySnapshot.documents.toList();
+                DocumentSnapshot item = conversas[indice];
+
+                String urlImagem = item["caminhoFoto"];
+                String tipo = item["tipoMensagem"];
+                String mensagem = item["mensagem"];
+                String nome = item["nome"];
 
                 return ListTile(
                   contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
                   leading: CircleAvatar(
                     maxRadius: 30,
                     backgroundColor: Colors.grey,
-                    backgroundImage: NetworkImage( conversa.caminhoFoto ),
+                    backgroundImage: urlImagem != null 
+                    ? NetworkImage( urlImagem )
+                    : null,
                   ),
                   title: Text(
-                    conversa.nome,
+                    nome,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
                   subtitle: Text(
-                    conversa.mensagem,
+                    tipo == "texto"
+                    ? mensagem
+                    : "Imagem...",
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
