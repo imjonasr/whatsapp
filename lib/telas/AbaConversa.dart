@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:whatsapp/model/Conversa.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AbaConversa extends StatefulWidget {
   @override
@@ -9,10 +13,14 @@ class AbaConversa extends StatefulWidget {
 class _AbaConversaState extends State<AbaConversa> {
   
   List<Conversa> _listaConversas = List();
+  final _controller = StreamController<QuerySnapshot>.broadcast();
+  Firestore db = Firestore.instance;
+  String _idUsuarioLogado;
 
   @override
   void initState() {
     super.initState();
+    _recuperarDadosUsuario();
 
     Conversa conversa = Conversa();
 
@@ -23,38 +31,100 @@ class _AbaConversaState extends State<AbaConversa> {
     _listaConversas.add(conversa);
   }
 
+  Stream<QuerySnapshot> _adicionarListenerConversas() {
+    final stream = db.collection("conversas")
+      .document(_idUsuarioLogado)
+      .collection("ultima_conversa")
+      .snapshots();
+
+    stream.listen((dados){
+      _controller.add( dados );
+    });
+  }
+
+  _recuperarDadosUsuario() async {
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    FirebaseUser usuarioLogado = await auth.currentUser();
+    _idUsuarioLogado = usuarioLogado.uid;
+
+    _adicionarListenerConversas();
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: _listaConversas.length,
-      itemBuilder: (context, indice) {
 
-        Conversa conversa = _listaConversas[indice];
+    return StreamBuilder<QuerySnapshot> (
+      stream: _controller.stream,
+      builder: (context, snapshot) {
+        switch(snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+          return Center(
+              child: Column(
+                children: <Widget>[
+                  Text("Carregando conversas"),
+                  CircularProgressIndicator(),
+                ],
+              ),
+            );
+            break;
+          case ConnectionState.active:
+          case ConnectionState.done:
+            if(snapshot.hasError) {
+              return Text("Erro ao carregar os dados!");
+            } else {
+              
+              QuerySnapshot querySnapshot = snapshot.data;
 
-        return ListTile(
-          contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-          leading: CircleAvatar(
-            maxRadius: 30,
-            backgroundColor: Colors.grey,
-            backgroundImage: NetworkImage( conversa.caminhoFoto ),
-          ),
-          title: Text(
-            conversa.nome,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          subtitle: Text(
-            conversa.mensagem,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-        );
+              if( querySnapshot.documents.length == 0 ) {
+                return Center(
+                  child: Text(
+                    "Você não tem nenhuma mensagem ainda :(",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }
 
+              return ListView.builder(
+              itemCount: _listaConversas.length,
+              itemBuilder: (context, indice) {
+
+                Conversa conversa = _listaConversas[indice];
+
+                return ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  leading: CircleAvatar(
+                    maxRadius: 30,
+                    backgroundColor: Colors.grey,
+                    backgroundImage: NetworkImage( conversa.caminhoFoto ),
+                  ),
+                  title: Text(
+                    conversa.nome,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    conversa.mensagem,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                );
+
+              },
+            );
+          }
+        }
       },
     );
+    
   }
 }
