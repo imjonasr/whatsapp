@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:whatsapp/model/Conversa.dart';
-import 'package:whatsapp/model/Usuario.dart';
+import 'package:whastapp/model/Conversa.dart';
+import 'package:whastapp/model/Usuario.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -34,7 +34,7 @@ class _AbaContatosState extends State<AbaContatos> {
 
       listaUsuarios.add(usuario);
     }
- 
+
     return listaUsuarios;
   }
 
@@ -75,14 +75,15 @@ class _AbaContatosState extends State<AbaContatos> {
             return ListView.builder(
                 itemCount: snapshot.data.length,
                 itemBuilder: (_, indice) {
+
                   List<Usuario> listaItens = snapshot.data;
                   Usuario usuario = listaItens[indice];
 
                   return ListTile(
-                    onTap: () {
+                    onTap: (){
                       Navigator.pushNamed(
-                        context,
-                        "/mensagens",
+                          context,
+                          "/mensagens",
                         arguments: usuario
                       );
                     },
